@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#version
+version="v1.0.0"
+shell_name="pdiff"
+
 # path_A string
 cmp_str_a=
 # path B string
@@ -20,25 +24,16 @@ function usage
 		|   __|_____|__||__|  |__|  
 		|__|                                                           
 	"         
-	echo "                	                              by-3hex"
+	echo "                	                              by-3hex[$version]"
 	echo "-s    Compare string"
 	echo "-p    Compare path(absolute or relative paths)"
 	echo "-i    Deatils"
 	echo "-n    Ignore whether the path exists"
 	echo "-h    Help"
+	echo "-v    Version"
 	echo "[-] string compare format: pdiff -s hi,jack hi,tom"
 	echo "[-] path compare format: pdiff -p ../../etc/1.txt /home/eTc/2.txt"
 }
-
-while getopts "s:p:i:n:h" opt;
-do
-        case $opt in
-                h)
-                        usage $0;
-                        exit 1;
-                ;;
-        esac
-done
 
 # 获取参数的值
 while [ $# -gt 0 ]; do
@@ -48,7 +43,7 @@ while [ $# -gt 0 ]; do
       ;;
     -h)
     	usage $0;
-    	exit 1;
+    	exit 0;
       ;;
     -p)
       	cmp_str_a=$2
@@ -61,6 +56,10 @@ while [ $# -gt 0 ]; do
       ;;
       -n)
      	ignore_flag=1
+      ;;
+      -v)
+      	echo "$shell_name versoin: $version"
+      	exit 0;
       ;;
   esac
   shift
