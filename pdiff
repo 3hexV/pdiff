@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# path_A string
+cmp_str_a=
+# path B string
+cmp_str_b=
+tmp_str=
+
+more_info=0
+str_flag=0
+ignore_flag=0
+
+# Usage
+function usage
+{
+	echo "
+			  __ __   ___   ___ 
+		.—————.--|  |__|.'  _|.'  _|
+		|  _  |  _  |  ||   _||   _|
+		|   __|_____|__||__|  |__|  
+		|__|                                                           
+	"         
+	echo "                	                              by-3hex"
+	echo "-s    Compare string"
+	echo "-p    Compare path(absolute or relative paths)"
+	echo "-i    Deatils"
+	echo "-n    Ignore whether the path exists"
+	echo "-h    Help"
+	echo "[-] string compare format: pdiff -s hi,jack hi,tom"
+	echo "[-] path compare format: pdiff -p ../../etc/1.txt /home/eTc/2.txt"
+}
+
+while getopts "s:p:i:n:h" opt;
+do
+        case $opt in
+                h)
+                        usage $0;
+                        exit 1;
+                ;;
+        esac
+done
+
+# 获取参数的值
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -i)
+      	more_info=1
+      ;;
+    -h)
+    	usage $0;
+    	exit 1;
+      ;;
+    -p)
+      	cmp_str_a=$2
+      	cmp_str_b=$3
+      ;;
+     -s)
+     	str_flag=1
+      	cmp_str_a=$2
+      	cmp_str_b=$3
+      ;;
+      -n)
+     	ignore_flag=1
+      ;;
+  esac
+  shift
+done
+
+
+# 判断第1个参数合法性
+if [ -z $cmp_str_a ]; then
+	echo -e "\e[31m[error]\e[0m Missing parameter 1, The script requires two paths"
+	exit 1;
+else
+	if [ $str_flag == 0 ] && [ $ignore_flag == 0 ] && ! [ -e $cmp_str_a ]; then 
+		echo -e "\e[31m[error]\e[0m path does not exist: $cmp_str_a"
+		exit 1;
+	fi
+fi
+
+# 判断第2个参数合法性
+if [ -z $cmp_str_b ]; then
+	echo -e "\e[31m[error]\e[0m Missing parameter 2, The script requires two paths"
+	exit 1;
+else
+	if [ $str_flag == 0 ] && [ $ignore_flag == 0 ] && ! [ -e $cmp_str_b ]; then 
+		echo -e "\e[31m[error]\e[0m path does not exist: $cmp_str_b"
+		exit 1;
+	fi
+fi
+
+# 如果是路径比较且不忽略路径是否存在，获得的绝对路径
+if [ $str_flag == 0 ] ; then
+	cmp_str_a=$(readlink -f $cmp_str_a) 
+	cmp_str_b=$(readlink -f $cmp_str_b)  
+fi
+
+# 将最长的字符串放入cmp_str_a中
+len1=${#cmp_str_a}
+len2=${#cmp_str_b}
+len=$(( len1 > len2 ? len1 : len2 ))  # 比较长度，获取较长的字符串长度
+
+if [ $len == $len2 ]; then
+	tmp_str=$cmp_str_a
+	cmp_str_a=$cmp_str_b
+	cmp_str_b=$tmp_str
+fi
+
+# 比较字符串差异
+if [ $cmp_str_a = $cmp_str_b ]; then
+	[ $more_info == 1 ] && echo -e "\e[34m[info]\e[0m It's the \e[32msame\e[0m path\e[0m"
+	exit 0;
+else
+	[ $more_info == 1 ] && echo -e "\e[34m[info]\e[0m It's a \e[31mdifferent\e[0m path\e[0m"
+	[ $more_info == 1 ] && echo -e "\e[34m[info] details:\e[0m"
+	
+	echo -e "$cmp_str_a\033[0m" 
+	
+	for (( i=0; i<len; i++ ))
+	do
+	    if [[ "${cmp_str_a:$i:1}" != "${cmp_str_b:$i:1}" ]]; then
+		echo -e "\033[0;31m^\c"
+	    else
+		echo -e "\033[0;32m \c"
+	    fi
+	done
+	echo -e "\n\e[0m$cmp_str_b\e[0m"
+fi
+
+
+
+
+
