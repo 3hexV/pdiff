@@ -1,0 +1,22 @@
+#!/usr/bin/python3
+
+import difflib
+
+tmp_path = "/tmp/"
+tmp_name_a = "tmp_pdiff_a"
+tmp_name_b = "tmp_pdiff_b"
+
+with open(tmp_path+tmp_name_a) as f:
+	text1 = f.read();
+
+with open(tmp_path+tmp_name_b) as f:
+	text2 = f.read();
+	
+	
+if not text1 == text2:
+	print("\033[34m[info]\033[0m It's a \033[31mdifferent\033[0m path\033[0m")
+	res_str = ''.join(list(difflib.Differ().compare(text1.splitlines(keepends=True),text2.splitlines(keepends=True))))
+	print(res_str.replace("^", "\033[31m^\033[0m"))
+else:
+	print("\033[34m[info]\033[0m It's the \033[32msame\033[0m path\033[0m");
+

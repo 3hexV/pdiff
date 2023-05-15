@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #version
-version="v1.0.0"
+version="v1.1.0"
 shell_name="pdiff"
 
 # path_A string
@@ -10,9 +10,9 @@ cmp_str_a=
 cmp_str_b=
 tmp_str=
 
-more_info=0
+# python shell flag
+python_shell_flag=0
 str_flag=0
-ignore_flag=0
 
 # Usage
 function usage
@@ -23,43 +23,44 @@ function usage
 		|  _  |  _  |  ||   _||   _|
 		|   __|_____|__||__|  |__|  
 		|__|                                                           
-	"         
-	echo "                	                              by-3hex[$version]"
-	echo "-s    Compare string"
-	echo "-p    Compare path(absolute or relative paths)"
-	echo "-i    Deatils"
-	echo "-n    Ignore whether the path exists"
-	echo "-h    Help"
-	echo "-v    Version"
+	" 
+	echo "                	                         by-3hex[$version]"
+	echo "-----------------------------------------------------------------"        
+	echo "  -y    		Use python's difflib for comparison,
+			not used by default"
+	echo "  -s,--str    		Compare string"
+	echo "  -p,--path    		Compare path(absolute or relative paths)"
+	echo "  -h,-H,--help    	Help"
+	echo "  -v,-V,--version    	Version"
+	echo "-----------------------------------------------------------------"
+	echo "[-] Usage: pdiff [-y] [-s/-p] str1 str2"
 	echo "[-] string compare format: pdiff -s hi,jack hi,tom"
-	echo "[-] path compare format: pdiff -p ../../etc/1.txt /home/eTc/2.txt"
+	echo "[-] path compare format: pdiff -y -p ../../etc/1.txt /home/eTc/2.txt"
+	
 }
 
 # 获取参数的值
 while [ $# -gt 0 ]; do
   case "$1" in
-    -i)
-      	more_info=1
-      ;;
-    -h)
-    	usage $0;
-    	exit 0;
-      ;;
-    -p)
-      	cmp_str_a=$2
-      	cmp_str_b=$3
-      ;;
-     -s)
-     	str_flag=1
-      	cmp_str_a=$2
-      	cmp_str_b=$3
-      ;;
-      -n)
-     	ignore_flag=1
-      ;;
-      -v)
-      	echo "$shell_name versoin: $version"
-      	exit 0;
+    	-h|-H|--help)
+    		usage $0;
+    		exit 0;
+      	;;
+    	-p|--path)
+      		cmp_str_a=$2
+      		cmp_str_b=$3
+      	;;
+	-s|--str)
+	     	str_flag=1
+	      	cmp_str_a=$2
+	      	cmp_str_b=$3
+     	;;
+      	-y)
+     		python_shell_flag=1
+      	;;
+      	-v|-V|--version)
+      		echo "$shell_name versoin: $version"
+      		exit 0;
       ;;
   esac
   shift
@@ -71,7 +72,7 @@ if [ -z $cmp_str_a ]; then
 	echo -e "\e[31m[error]\e[0m Missing parameter 1, The script requires two paths"
 	exit 1;
 else
-	if [ $str_flag == 0 ] && [ $ignore_flag == 0 ] && ! [ -e $cmp_str_a ]; then 
+	if [ $str_flag == 0 ] && ! [ -e $cmp_str_a ]; then 
 		echo -e "\e[31m[error]\e[0m path does not exist: $cmp_str_a"
 		exit 1;
 	fi
@@ -82,7 +83,7 @@ if [ -z $cmp_str_b ]; then
 	echo -e "\e[31m[error]\e[0m Missing parameter 2, The script requires two paths"
 	exit 1;
 else
-	if [ $str_flag == 0 ] && [ $ignore_flag == 0 ] && ! [ -e $cmp_str_b ]; then 
+	if [ $str_flag == 0 ] && ! [ -e $cmp_str_b ]; then 
 		echo -e "\e[31m[error]\e[0m path does not exist: $cmp_str_b"
 		exit 1;
 	fi
@@ -105,13 +106,21 @@ if [ $len == $len2 ]; then
 	cmp_str_b=$tmp_str
 fi
 
-# 比较字符串差异
+# 使用python difflib-比较字符串差异
+if [ $python_shell_flag == 1 ]; then
+	echo $cmp_str_a > /tmp/tmp_pdiff_a
+	echo $cmp_str_b > /tmp/tmp_pdiff_b
+	/usr/bin/pdiff_/pdiff_py
+	exit 0;
+fi
+
+# shell脚本-比较字符串差异
 if [ $cmp_str_a = $cmp_str_b ]; then
-	[ $more_info == 1 ] && echo -e "\e[34m[info]\e[0m It's the \e[32msame\e[0m path\e[0m"
+	echo -e "\e[34m[info]\e[0m It's the \e[32msame\e[0m path\e[0m"
 	exit 0;
 else
-	[ $more_info == 1 ] && echo -e "\e[34m[info]\e[0m It's a \e[31mdifferent\e[0m path\e[0m"
-	[ $more_info == 1 ] && echo -e "\e[34m[info] details:\e[0m"
+	echo -e "\e[34m[info]\e[0m It's a \e[31mdifferent\e[0m path\e[0m"
+	echo -e "\e[34m[info]\e[0m details:\e[0m"
 	
 	echo -e "$cmp_str_a\033[0m" 
 	
